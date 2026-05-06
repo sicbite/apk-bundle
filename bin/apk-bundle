@@ -56,4 +56,62 @@ fi
 PACKAGES_ONELINE=$(echo $PACKAGES)
 echo "Installing packages: $PACKAGES_ONELINE"
 
+apk add $PACKAGES_ONELINE#!/bin/bash
+
+# apk-bundle: A simple wrapper for installing packages from a list on Alpine Linux.
+
+set -e
+
+# Help function
+show_help() {
+    echo "Usage: doas apk-bundle <file>"
+    echo
+    echo "Install a bundle of packages listed in <file>."
+    echo "Packages should be one per line. Lines starting with # or containing # are ignored."
+    echo
+    echo "Options:"
+    echo "  -h, --help    Show this help message"
+    echo
+    echo "Requirement:"
+    echo "  This script must be run with doas."
+}
+
+# Check for help flag
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check for doas/root
+if [ "$USER" != "root" ]; then
+    echo "Error: This script must be run with doas or as root."
+    exit 1
+fi
+
+# Check for file argument
+if [ -z "$1" ]; then
+    echo "Error: No package list file provided."
+    show_help
+    exit 1
+fi
+
+FILE="$1"
+
+if [ ! -f "$FILE" ]; then
+    echo "Error: File '$FILE' not found."
+    exit 1
+fi
+
+# Parse file: remove comments and empty lines
+PACKAGES=$(sed 's/#.*//; /^[[:space:]]*$/d' "$FILE")
+
+if [ -z "$PACKAGES" ]; then
+    echo "No valid packages found in $FILE."
+    exit 0
+fi
+
+# Install packages
+PACKAGES_ONELINE=$(echo $PACKAGES)
+echo "Installing packages: $PACKAGES_ONELINE"
+
 apk add $PACKAGES_ONELINE
