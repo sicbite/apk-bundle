@@ -53,5 +53,15 @@ if [ -z "$PACKAGES" ]; then
 fi
 
 # Install packages
-echo "Installing packages: $PACKAGES"
-apk add $PACKAGES
+PACKAGES_ONELINE=$(echo $PACKAGES)
+echo "Installing packages: $PACKAGES_ONELINE"
+
+# Ensure the first package is installed first
+set -- $PACKAGES_ONELINE
+FIRST_PKG="$1"
+shift
+
+apk add "$FIRST_PKG"
+if [ $# -gt 0 ]; then
+    apk add "$@"
+fi
